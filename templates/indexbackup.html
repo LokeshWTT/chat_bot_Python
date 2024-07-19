@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Chatbot</title>
+    <style>
+
+
+      @media (max-width: 768px) {
+    .chatContainer {
+
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: #ffffff; /* Adjust as needed */
+        z-index: 999; /* Ensure it's above other content */
+    }
+
+    .chatIcon {
+
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: #007bff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+
+    <script>
+ document.addEventListener('DOMContentLoaded', function() {
+            createChatWidget();
+
+            // Fetch FAQs and populate the list
+            getFrequentlyAskedQuestions().then(faqs => {
+                populateFaqList(faqs);
+            });
+
+            // Fetch and display the user's name along with frequently asked questions
+            getUserInfo().then(userName => {
+                const chatContainer = document.getElementById('chatContainer');
+                const chatMessages = document.getElementById('chatMessages');
+
+                // Create and append the welcome message
+                const welcomeMessage = document.createElement('div');
+                welcomeMessage.className = 'bot-message';
+                welcomeMessage.textContent = `Welcome, ${userName}! How can I assist you today?`;
+                welcomeMessage.style.cssText = `
+        align-self: flex-start;
+        background-color: #f0f0f0;
+        padding: 10px;
+        max-width: 70%;
+        border-radius: 10px;
+        word-wrap: break-word;
+    `;
+                chatMessages.appendChild(welcomeMessage);
+
+
+                // Display the chat container
+                chatContainer.classList.add('active');
+
+                // Fetch and display the frequently asked questions
+                getFrequentlyAskedQuestions().then(faqs => {
+                    if (faqs.length > 0) {
+                        const faqIntro = document.createElement('div');
+                        faqIntro.className = 'bot-message';
+                        faqIntro.innerHTML = 'Here are some frequently asked questions you might find helpful:';
+                        faqIntro.style.cssText = `
+                align-self: flex-start;
+                background-color: #f0f0f0;
+                padding: 10px;
+                max-width: 70%;
+                border-radius: 10px;
+                word-wrap: break-word;
+                margin-top: 10px; // Add space between messages
+            `;
+                        chatMessages.appendChild(faqIntro);
+
+                        const topFaqs = faqs.slice(0, 8);
+                        topFaqs.forEach((faq, index) => {
+                            const faqItem = document.createElement('div');
+                            faqItem.className = 'faq-item';
+                            faqItem.textContent = `${index + 1}. ${faq.question}`;
+                            faqItem.style.cssText = `
+                    cursor: pointer;
+                    color: #007bff;
+                    padding: 5px;
+                    border-radius: 5px;
+                    margin-top: 5px; // Add space between FAQ items
+                `;
+                            faqItem.addEventListener('click', () => {
+                                document.getElementById('userInput').value = faq.question;
+                                sendMessage();
+                            });
+                            chatMessages.appendChild(faqItem);
+                        });
+                    } else {
+                        const noFaqMessage = document.createElement('div');
+                        noFaqMessage.className = 'bot-message';
+                        noFaqMessage.innerHTML = 'No frequently asked questions available at the moment.';
+                        chatMessages.appendChild(noFaqMessage);
+                    }
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+                }).catch(error => {
+                    console.error('Error fetching FAQ data:', error);
+                });
+            }).catch(error => {
+                console.error('Error getting user info:', error);
+            });
+        });
+
+        function createChatWidget() {
+            const chatIcon = document.createElement('div');
+            chatIcon.id = 'chatIcon';
+            chatIcon.className = 'chatIcon';
+            chatIcon.innerHTML = '';
+            document.body.appendChild(chatIcon);
+
+            const chatContainer = document.createElement('div');
+            chatContainer.id = 'chatContainer';
+            chatContainer.className = 'chatContainer';
+            chatContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                flex-direction: column;
+                border-radius: 12px;
+                overflow: hidden;
+                background-color: #fff;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                font-family: Arial, sans-serif;
+            `;
+            document.body.appendChild(chatContainer);
+
+    const chatHeader = document.createElement('div');
+    chatHeader.id = 'chatHeader';
+    chatHeader.className = 'chatHeader';
+    chatHeader.style.cssText = `
+        background-color: #007bff;
+        color: #fff;
+        padding: 16px;
+        font-size: 20px;
+        text-align: center;
+        border-bottom: 2px solid #007bff;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    chatContainer.appendChild(chatHeader);
+
+
+
+    const headerText = document.createElement('span');
+    headerText.textContent = 'WTT - FAQ Chat Bot';
+    headerText.style.marginRight = '48px';
+    chatHeader.appendChild(headerText);
+
+
+// Event listener for beforeunload event (when user closes the tab/window)
+window.addEventListener('beforeunload', function(event) {
+    // Perform logout actions, e.g., clearing session
+    // You may want to display a confirmation dialog
+    // This event handler is executed when the user closes the tab/window
+    fetch('/logout') // Optional: You can make an AJAX request to logout endpoint
+});
+
+//     const logoutButton = document.createElement('button');
+// logoutButton.textContent = 'Logout';
+// logoutButton.style.cssText = `
+//     position: absolute;
+//     top: 12px;
+//     right: 16px;
+//     cursor: pointer;
+//     font-size: 16px;
+//     padding: 5px 10px;
+//     background-color: #ff2626;
+//     color: white;
+//     border: none;
+//     border-radius: 5px;
+// `;
+// chatHeader.appendChild(logoutButton);
+
+// // Event listener for logout button
+// logoutButton.addEventListener('click', function() {
+//     // Perform logout actions, e.g., clearing session
+//     // Redirect to login page
+//     window.location.href = '/logout';
+// });
+
+
+
+    const faqList = document.createElement('div');
+    faqList.id = 'faqList';
+    faqList.className = 'faqList';
+    faqList.style.cssText = `
+        padding: 16px;
+        font-size: 14px;
+        flex: 1;
+        overflow-y: auto;
+        border-radius: 10px;
+        border: 5px solid #f9f9f9;
+        display: none; /* Initially hide the FAQ list */
+    `;
+    faqList.style.overflowY = 'scroll'; // Enable vertical scrolling
+    faqList.style.msOverflowStyle = 'none';  // Internet Explorer 10+
+    faqList.style.scrollbarWidth = 'none';  // Firefox
+
+    // Hide scrollbar for Webkit browsers (Chrome, Safari)
+    faqList.style.cssText += `
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    `;
+
+    // Append faqList to chatContainer
+    chatContainer.appendChild(faqList);
+
+    // Hide scrollbar for Webkit browsers (Chrome, Safari)
+    const style = document.createElement('style');
+    style.textContent = `
+        #faqList::-webkit-scrollbar {
+            display: none;
+        }
+    `;
+    chatContainer.appendChild(style);
+
+    const chatMessages = document.createElement('div');
+    chatMessages.id = 'chatMessages';
+    chatMessages.className = 'chatMessages';
+    chatMessages.style.cssText = `
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+        font-size: 14px;
+    `;
+    chatContainer.appendChild(chatMessages);
+
+    const chatInputContainer = document.createElement('div');
+    chatInputContainer.id = 'chatInputContainer';
+    chatInputContainer.className = 'chatInputContainer';
+    chatInputContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        background-color: #f1f1f1;
+        border-top: 1px solid #ddd;
+    `;
+    chatContainer.appendChild(chatInputContainer);
+
+    const userInput = document.createElement('input');
+    userInput.id = 'userInput';
+    userInput.className = 'userInput';
+    userInput.type = 'text';
+    userInput.placeholder = 'Type your question...';
+    userInput.style.cssText = `
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        background-color: #fff;
+        color: #000;
+    `;
+    chatInputContainer.appendChild(userInput);
+
+    const sendButton = document.createElement('button');
+    sendButton.id = 'sendButton';
+    sendButton.className = 'sendButton';
+    sendButton.textContent = 'Send';
+    sendButton.style.cssText = `
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        margin-left: 10px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+        font-size: 14px;
+    `;
+    chatInputContainer.appendChild(sendButton);
+
+    chatIcon.addEventListener('click', function() {
+        chatContainer.style.display = 'flex';
+        chatIcon.style.display = 'none';
+        faqList.style.display = 'none'; // Ensure faqList is hidden when opening chat
+    });
+
+    // logo.addEventListener('click', function() {
+    //     toggleFaqList();
+    // });
+
+    sendButton.addEventListener('click', function() {
+        sendMessage();
+    });
+
+    userInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Event listener to hide faqList when clicking outside the chat container
+    document.addEventListener('click', function(event) {
+        if (!faqList.contains(event.target) && !logo.contains(event.target)) {
+            faqList.style.display = 'none';
+        }
+    });
+
+    function toggleFaqList() {
+        if (faqList.style.display === 'none') {
+            faqList.style.display = 'block';
+        } else {
+            faqList.style.display = 'none';
+        }
+    }
+}
+
+        // Fetch user info
+        function getUserInfo() {
+            // Replace this with an actual API call or fetch from your backend
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve('User');
+                }, 1000);
+            });
+        }
+
+        // Fetch FAQs
+        function getFrequentlyAskedQuestions() {
+            return fetch('/get_faqs')
+                .then(response => response.json())
+                .then(data => data)
+                .catch(error => {
+                    console.error('Error fetching FAQ data:', error);
+                    return [];
+                });
+        }
+
+        function sendMessage() {
+    const userInput = document.getElementById('userInput');
+    const message = userInput.value.trim();
+
+    if (message !== '') {
+        appendUserMessage(message);
+        fetch(`/get_response?question=${encodeURIComponent(message)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    if (data.length === 1 && data[0].answer) {
+                        // Display the answer if only one result with an answer
+                        appendBotMessage(data[0].answer);
+                    } else {
+                        // Display suggested questions if more than one match
+                        displaySuggestedQuestions(data);
+                    }
+                } else {
+                    appendBotMessage('Sorry, I couldn\'t find an answer to your question.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                appendBotMessage('Sorry, something went wrong. Please try again.');
+            });
+
+        userInput.value = '';
+    }
+}
+
+
+
+
+        function appendUserMessage(message) {
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Create message element for user's question
+    const userMessage = document.createElement('div');
+    userMessage.className = 'user-message';
+    userMessage.innerHTML = message;
+    userMessage.style.cssText = `
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        max-width: 70%;
+        border-radius: 10px;
+        word-wrap: break-word;
+        margin-top: 8px;
+        margin-left: auto; /* Move the user message container to the right */
+    `;
+    chatMessages.appendChild(userMessage);
+
+    // Get user's name and current time
+    getUserInfo().then(userName => {
+        const userInfoElement = document.createElement('div');
+        userInfoElement.className = 'user-info';
+        userInfoElement.textContent = `${userName} (${getCurrentTime()})`;
+        userInfoElement.style.cssText = `
+            color: rgb(0, 123, 255);
+            font-size: 10px;
+            text-align: right;
+            margin-bottom: 8px;
+        `;
+        chatMessages.appendChild(userInfoElement);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }).catch(error => {
+        console.error('Error getting user info:', error);
+        // If there's an error fetching user info, handle appropriately
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function appendBotMessage(message) {
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Create message element for bot's response
+    const botMessage = document.createElement('div');
+    botMessage.className = 'bot-message';
+    botMessage.innerHTML = message;
+    botMessage.style.cssText = `
+        align-self: flex-start; /* Align bot messages to the left */
+        background-color: #f0f0f0; /* Light grey background for bot messages */
+        padding: 10px;
+        max-width: 70%; /* Limit the width of bot messages */
+        border-radius: 10px; /* Rounded corners for bot messages */
+        word-wrap: break-word; /* Wrap long messages */
+    `;
+    chatMessages.appendChild(botMessage);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function displaySuggestedQuestions(matches) {
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Create a message for the suggestion list
+    const suggestionMessage = document.createElement('div');
+    suggestionMessage.className = 'bot-message';
+    suggestionMessage.innerHTML = 'I found several similar questions. Please choose the one that best matches your query:';
+    suggestionMessage.style.cssText = `
+        align-self: flex-start;
+        background-color: #f0f0f0;
+        padding: 10px;
+        max-width: 70%;
+        border-radius: 10px;
+        word-wrap: break-word;
+        margin-top: 10px; /* Add space between messages */
+    `;
+    chatMessages.appendChild(suggestionMessage);
+
+    // Create suggestion items and append them below the suggestion message
+    matches.forEach((match, index) => {
+        const suggestionElement = document.createElement('div');
+        suggestionElement.className = 'suggestion-item';
+        suggestionElement.textContent = `${index + 1}. ${match.question}`;
+        suggestionElement.style.cssText = `
+            cursor: pointer;
+            color: #007bff;
+            padding: 5px;
+            border-radius: 5px;
+            margin-top: 5px; /* Add space between suggestion items */
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        `;
+        suggestionElement.addEventListener('click', () => {
+            appendUserMessage(match.question); // Display the selected question
+            appendBotMessage(match.answer); // Display the corresponding answer
+
+            // Remove suggestion items after selecting one
+            suggestionMessage.remove();
+            suggestionElement.remove();
+        });
+        chatMessages.appendChild(suggestionElement);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+}
+
+
+
+
+
+
+    </script>
+</body>
+</html>

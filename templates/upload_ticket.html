@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Ticket</title>
+</head>
+<body>
+    <h2>Upload Ticket</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="ticket_name">Ticket Name:</label><br>
+        <input type="text" id="ticket_name" name="ticket_name" required><br><br>
+
+        <label for="ticket_description">Ticket Description:</label><br>
+        <textarea id="ticket_description" name="ticket_description" rows="4" required></textarea><br><br>
+
+        <label for="ticket_subject">Ticket Subject:</label><br>
+        <input type="text" id="ticket_subject" name="ticket_subject" required><br><br>
+
+        <label for="ticket_rsl">Ticket Resolution:</label><br>
+        <textarea id="ticket_rsl" name="ticket_rsl" rows="4" required></textarea><br><br>
+
+        <label for="ticket_image">Upload Image:</label><br>
+        <input type="file" id="ticket_image" name="ticket_image" accept="image/png, image/jpeg" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

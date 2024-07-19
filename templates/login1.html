@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+
+</head>
+<style>
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%; /* Full width */
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: #fff;
+    padding: 40px;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px; /* Maximum width for larger screens */
+    box-sizing: border-box;
+}
+
+.login-box h2 {
+    margin: 0 0 20px;
+    padding: 0;
+    color: #333;
+    text-align: center;
+}
+
+.user-box {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.user-box input {
+    width: 100%;
+    padding: 10px 15px; /* Adjusted padding for better input box appearance */
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 15px; /* Adjusted margin for spacing */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    background: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s; /* Added transition for border and box-shadow */
+}
+
+.user-box input:focus,
+.user-box input:hover {
+    border-color: #03a9f4; /* Border color on hover or focus */
+    box-shadow: 0 0 5px 0 rgba(3, 169, 244, 0.5); /* Light blue outer shadow on hover or focus */
+}
+
+.user-box label {
+    position: absolute;
+    top: 10px;
+    left: 15px; /* Adjusted left position */
+    padding: 0 5px;
+    font-size: 16px;
+    color: #333;
+    pointer-events: none;
+    transition: 0.3s;
+    background: #fff;
+}
+
+.user-box input:focus ~ label,
+.user-box input:valid ~ label {
+    top: -12px;
+    left: 15px; /* Adjusted left position */
+    color: #03a9f4;
+    font-size: 12px;
+    background: #fff;
+}
+
+button {
+    background: #03a9f4;
+    border: none;
+    padding: 10px 20px;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #039be5;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .login-box {
+        width: 100%;
+        max-width: none; /* Full width on smaller screens */
+        margin: 0 20px;
+    }
+}
+
+</style>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h2>Login</h2>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form action="/login" method="POST">
+				<div class="user-box">
+					<input type="text" name="username" required>
+					<label><span>Username</span></label>
+				</div>
+				<div class="user-box">
+					<input type="password" name="password" required>
+					<label><span>Password</span></label>
+				</div>
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
